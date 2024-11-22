@@ -1,0 +1,134 @@
+/* General styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to bottom, #2b5876, #4e4376);
+    color: #fff;
+}
+
+/* Main container */
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Title styles */
+h1 {
+    text-align: center;
+    color: #d32f2f;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+h1 .emoji {
+    font-size: 1.2em;
+}
+
+/* Image of Santa Claus */
+.santa-img {
+    display: block;
+    margin: 0 auto 20px auto;
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Input and button section */
+.input-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #d32f2f;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #388e3c;
+    box-shadow: 0 0 5px #388e3c;
+}
+
+button {
+    padding: 10px 15px;
+    background-color: #388e3c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #4caf50;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* List of participants */
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    color: #333;
+    border: 2px solid #d32f2f;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s;
+}
+
+li:hover {
+    background-color: #ffe082;
+    transform: scale(1.03);
+}
+
+/* Delete button inside list items */
+.delete-btn {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delete-btn:hover {
+    background-color: #b71c1c;
+}
+
+/* Hidden results section */
+.hidden {
+    display: none;
+}
+
+#result {
+    margin-top: 20px;
+    background-color: #ffeb3b;
+    color: #333;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.2em;
+}
