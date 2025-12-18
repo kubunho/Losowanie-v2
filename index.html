@@ -1,25 +1,342 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Losowanie Prezentów</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mikołajkowe losowanie prezentów</title>
+<style>
+  :root{
+    --bg1:#0b1022;   /* nocne niebo */
+    --bg2:#12224a;   /* głębia */
+    --aurora1:#0ea5e9; /* błękit */
+    --aurora2:#22c55e; /* zieleń */
+    --aurora3:#f43f5e; /* róż */
+    --card: rgba(255,255,255,.06);
+    --card-b: rgba(255,255,255,.12);
+    --muted: #cbd5e1;
+    --text: #e5e7eb;
+    --accent: #22c55e;
+    --radius: 16px;
+    --shadow: 0 15px 40px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    /* CSS-only świąteczne tło: nocne niebo + zorza + gwiazdki */
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(34,197,94,.20), transparent 60%),
+      radial-gradient(900px 500px at 90% -10%, rgba(14,165,233,.20), transparent 60%),
+      radial-gradient(700px 400px at 50% -20%, rgba(244,63,94,.18), transparent 65%),
+      repeating-radial-gradient(circle at 30% 20%, rgba(255,255,255,.12) 0 1px, transparent 1px 6px), /* delikatne gwiazdki */
+      linear-gradient(180deg, var(--bg1), var(--bg2));
+    min-height:100%;
+    overflow-x:hidden;
+  }
+
+  /* Migoczące gwiazdki (pseudo-element nad tłem) */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(2px 2px at 20% 10%, rgba(255,255,255,.9), transparent 60%),
+      radial-gradient(1.5px 1.5px at 70% 25%, rgba(255,255,255,.9), transparent 60%),
+      radial-gradient(1.5px 1.5px at 40% 45%, rgba(255,255,255,.9), transparent 60%),
+      radial-gradient(1.5px 1.5px at 85% 55%, rgba(255,255,255,.9), transparent 60%),
+      radial-gradient(1.5px 1.5px at 15% 70%, rgba(255,255,255,.9), transparent 60%);
+    animation: twinkle 3s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from{opacity:.6} to{opacity:1} }
+
+  .wrap{max-width:1000px;margin:40px auto;padding:0 20px; position:relative; z-index:1}
+  header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:20px}
+  h1{font-size:clamp(22px,3vw,34px);margin:0;letter-spacing:.3px}
+  .count{color:var(--muted);font-size:14px}
+
+  .card{background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border:1px solid var(--card-b); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .grid{display:grid;grid-template-columns:1.2fr .8fr; gap:20px}
+  @media (max-width: 880px){.grid{grid-template-columns:1fr}}
+
+  /* Panel: dodawanie osób */
+  .panel{padding:18px}
+  .row{display:flex;gap:10px;align-items:center}
+  input[type="text"]{flex:1;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(2,6,23,.6); color:var(--text); outline:none; transition:.2s box-shadow,.2s border}
+  input[type="text"]:focus{box-shadow:0 0 0 6px rgba(34,197,94,.25); border-color: var(--accent)}
+  .btn{cursor:pointer;border:none;padding:12px 16px;border-radius:12px;font-weight:600;letter-spacing:.2px; transition:.2s transform, .2s opacity}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:linear-gradient(180deg,#10b981,#059669);color:white}
+  .btn-secondary{background:linear-gradient(180deg,#22d3ee,#06b6d4);color:#052227}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px dashed rgba(255,255,255,.18)}
+  .btn-danger{background:linear-gradient(180deg,#ef4444,#b91c1c);color:white}
+
+  /* Lista osób */
+  .list{margin-top:14px; display:grid; grid-template-columns:1fr; gap:10px; max-height:340px; overflow:auto; padding-right:6px}
+  .person{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:12px}
+  .person .name{font-weight:600}
+  .person .actions{display:flex; gap:8px}
+  .hint{font-size:13px; color:var(--muted)}
+
+  /* Wyniki – tryb odkrywania/zakrywania */
+  .results{padding:18px}
+  .pair{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:12px; margin:8px 0}
+  .badge{font-size:12px; color:var(--muted)}
+  .pair .reveal{cursor:pointer; padding:8px 10px; border-radius:10px; border:1px dashed rgba(255,255,255,.2); background:rgba(2,6,23,.4)}
+  .pair .reveal.revealed{background:rgba(16,185,129,.18); border-style:solid}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end;margin-top:10px}
+
+  /* Dekor: sanie + choinki (inline SVG) */
+  .decor{position:fixed; right: -60px; top: 20px; width: 260px; opacity:.85; filter: drop-shadow(0 10px 10px rgba(0,0,0,.35)); pointer-events:none}
+  .hills{position:fixed; left:0; right:0; bottom:-10px; height:160px; pointer-events:none;}
+
+  /* Płatki śniegu */
+  .snowflake{position:fixed; top:-10px; background:white; border-radius:50%; opacity:.9; animation:fall linear infinite; z-index:0}
+  @keyframes fall{to{transform:translateY(110vh)}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1><span class="emoji">🎅</span> Losowanie Prezentów <span class="emoji">🎄</span></h1>
-        <div class="input-section">
-            <input type="text" id="participant" placeholder="Dodaj uczestnika">
-            <button id="add-participant">Dodaj</button>
+  <!-- Dekor: sanie Mikołaja (SVG bez zewnętrznych obrazów) -->
+  <svg class="decor" viewBox="0 0 300 140" aria-hidden="true">
+    <g fill="none" stroke="#ffe08a" stroke-width="3">
+      <path d="M10 110 Q 70 90 120 110 T 230 110 T 290 110" opacity=".6"/>
+    </g>
+    <g transform="translate(100,10)">
+      <rect x="10" y="50" width="75" height="30" rx="6" fill="#a11d2f"/>
+      <rect x="65" y="35" width="35" height="20" rx="4" fill="#a11d2f"/>
+      <circle cx="30" cy="90" r="10" fill="#111"/>
+      <circle cx="85" cy="90" r="10" fill="#111"/>
+      <path d="M0 90 H 110" stroke="#ffe08a" stroke-width="4" fill="none"/>
+      <circle cx="115" cy="50" r="12" fill="#fff"/>
+      <rect x="112" y="36" width="6" height="12" fill="#fff"/>
+      <path d="M118 50 q 14 -8 26 0" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/>
+    </g>
+  </svg>
+
+  <!-- Dekor: śnieżne pagórki (SVG) -->
+  <svg class="hills" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
+    <linearGradient id="snowgrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".9"/>
+      <stop offset="100%" stop-color="#e2e8f0" stop-opacity=".75"/>
+    </linearGradient>
+    <path d="M0 120 C 200 60 300 160 520 110 C 720 60 820 150 1000 90 L 1000 160 L 0 160 Z" fill="url(#snowgrad)"/>
+  </svg>
+
+  <div class="wrap">
+    <header>
+      <h1>🎅 Mikołajkowe losowanie prezentów 🎁</h1>
+      <div class="count"><span id="count">0</span> osób na liście</div>
+    </header>
+
+    <div class="grid card">
+      <section class="panel" aria-labelledby="lista-osob">
+        <h2 id="lista-osob" style="margin:0 0 10px 0">Lista osób</h2>
+        <form id="addForm" class="row" autocomplete="off">
+          <input id="nameInput" type="text" placeholder="Imię lub imię i nazwisko" aria-label="Imię" required />
+          <button class="btn btn-secondary" type="submit">Dodaj</button>
+          <button class="btn btn-ghost" type="button" id="clearAll" title="Wyczyść listę">Wyczyść</button>
+        </form>
+        <div class="hint" style="margin-top:8px">Enter działa 🙂 Lista zapisuje się w przeglądarce.</div>
+        <div id="peopleList" class="list" aria-live="polite"></div>
+      </section>
+
+      <section class="results" aria-labelledby="wyniki">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap">
+          <h2 id="wyniki" style="margin:0">Wyniki (klikaj, aby odkrywać / zakrywać)</h2>
+          <div class="toolbar">
+            <button id="drawBtn" class="btn btn-primary" type="button">Wylosuj pary</button>
+            <button id="reshuffleBtn" class="btn btn-ghost" type="button">Przelosuj</button>
+            <button id="hideAllBtn" class="btn btn-ghost" type="button">Ukryj wszystko</button>
+          </div>
         </div>
-        <ul id="participants-list"></ul>
-        <button id="draw-names" disabled>Przygotuj Losowanie</button>
-        <div id="result" class="hidden">
-            <h2>Wynik Losowania:</h2>
-            <p id="single-result"></p>
-        </div>
+        <p id="emptyState" class="hint" style="margin-top:8px">Brak wyników. Dodaj minimum 2 osoby i kliknij <strong>Wylosuj pary</strong>.</p>
+        <div id="resultsWrap" style="display:none; margin-top:6px"></div>
+      </section>
     </div>
-    <script src="script.js"></script>
+
+    <footer class="hint" style="margin-top:18px">Chcesz dodać wykluczenia (np. para ≠ para) lub karteczki dla uczestników? Daj znać.</footer>
+  </div>
+
+  <script>
+    // --- Storage ---
+    const STORAGE_KEY = 'secret-santa-people-v2';
+    function uid(){return Math.random().toString(36).slice(2,10)}
+    function savePeople(people){localStorage.setItem(STORAGE_KEY, JSON.stringify(people))}
+    function loadPeople(){try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [] }catch{ return [] }}
+
+    // --- Stan ---
+    let people = loadPeople(); // [{id, name}]
+    let lastDraw = null;       // [{fromId, toId}]
+
+    const els = {
+      count: document.getElementById('count'),
+      list: document.getElementById('peopleList'),
+      nameInput: document.getElementById('nameInput'),
+      addForm: document.getElementById('addForm'),
+      clearAll: document.getElementById('clearAll'),
+      drawBtn: document.getElementById('drawBtn'),
+      reshuffleBtn: document.getElementById('reshuffleBtn'),
+      hideAllBtn: document.getElementById('hideAllBtn'),
+      resultsWrap: document.getElementById('resultsWrap'),
+      emptyState: document.getElementById('emptyState'),
+    };
+
+    // --- Render listy osób ---
+    function renderPeople(){
+      els.list.innerHTML = '';
+      people.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'person';
+        row.innerHTML = `
+          <div>
+            <div class="name">${escapeHtml(p.name)}</div>
+            <div class="badge">ID: ${p.id}</div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-ghost" title="Edytuj" data-action="edit" data-id="${p.id}">Edytuj</button>
+            <button class="btn btn-danger" title="Usuń" data-action="del" data-id="${p.id}">Usuń</button>
+          </div>
+        `;
+        els.list.appendChild(row);
+      });
+      els.count.textContent = people.length;
+    }
+
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+    }
+
+    // --- Formularz ---
+    els.addForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = els.nameInput.value.trim();
+      if(!name){return}
+      people.push({id: uid(), name});
+      els.nameInput.value = '';
+      savePeople(people);
+      renderPeople();
+      clearResults();
+    });
+
+    els.clearAll.addEventListener('click', () => {
+      if(people.length === 0) return;
+      if(confirm('Na pewno usunąć całą listę osób?')){
+        people = [];
+        savePeople(people);
+        renderPeople();
+        clearResults();
+      }
+    });
+
+    // --- Akcje na liście ---
+    els.list.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const id = btn.getAttribute('data-id');
+      const action = btn.getAttribute('data-action');
+      const index = people.findIndex(p => p.id === id);
+      if(index === -1) return;
+      if(action === 'del'){
+        if(confirm(`Usunąć ${people[index].name}?`)){
+          people.splice(index,1);
+          savePeople(people);
+          renderPeople();
+          clearResults();
+        }
+      } else if(action === 'edit'){
+        const current = people[index].name;
+        const next = prompt('Zmień nazwę:', current);
+        if(next !== null){
+          const trimmed = next.trim();
+          if(trimmed){ people[index].name = trimmed; savePeople(people); renderPeople(); clearResults(); }
+        }
+      }
+    });
+
+    // --- Losowanie (Sattolo) ---
+    function sattoloShuffle(arr){
+      const a = arr.slice();
+      for(let i=a.length; i>1; i--){
+        const j = Math.floor(Math.random()*(i-1)); // 0..i-2
+        const tmp = a[i-1];
+        a[i-1] = a[j];
+        a[j] = tmp;
+      }
+      return a;
+    }
+
+    function drawPairs(){
+      if(people.length < 2){
+        alert('Dodaj przynajmniej 2 osoby.');
+        return;
+      }
+      const givers = people.slice();
+      const receivers = sattoloShuffle(people);
+      lastDraw = givers.map((p, i) => ({ fromId: p.id, toId: receivers[i].id }));
+      renderResults();
+    }
+
+    function renderResults(){
+      if(!lastDraw || lastDraw.length === 0){ return; }
+      els.resultsWrap.innerHTML = '';
+      const map = Object.fromEntries(people.map(p => [p.id, p.name]));
+      lastDraw.forEach(pair => {
+        const row = document.createElement('div');
+        row.className = 'pair';
+        const label = document.createElement('div');
+        label.innerHTML = `<strong>${escapeHtml(map[pair.fromId]||'')}</strong>`;
+        const reveal = document.createElement('button');
+        reveal.type = 'button';
+        reveal.className = 'reveal';
+        reveal.textContent = 'kliknij, aby zobaczyć';
+        reveal.addEventListener('click', ()=>{
+          if(reveal.classList.contains('revealed')){
+            reveal.classList.remove('revealed');
+            reveal.textContent = 'kliknij, aby zobaczyć';
+          } else {
+            reveal.classList.add('revealed');
+            reveal.textContent = (map[pair.toId]||'');
+          }
+        });
+        row.appendChild(label);
+        row.appendChild(reveal);
+        els.resultsWrap.appendChild(row);
+      });
+      els.emptyState.style.display = 'none';
+      els.resultsWrap.style.display = '';
+    }
+
+    function clearResults(){
+      lastDraw = null;
+      els.resultsWrap.style.display = 'none';
+      els.emptyState.style.display = '';
+      els.resultsWrap.innerHTML = '';
+    }
+
+    // --- Przyciski ---
+    els.drawBtn.addEventListener('click', drawPairs);
+    els.reshuffleBtn.addEventListener('click', drawPairs);
+    els.hideAllBtn.addEventListener('click', ()=>{
+      document.querySelectorAll('.reveal.revealed').forEach(btn=>{
+        btn.classList.remove('revealed');
+        btn.textContent = 'kliknij, aby zobaczyć';
+      });
+    });
+
+    // --- Start ---
+    renderPeople();
+
+    // --- Śnieg JS (lekki) ---
+    function snow(){
+      const s = document.createElement('div');
+      s.className = 'snowflake';
+      const size = Math.random()*4 + 3;
+      s.style.width = size+'px';
+      s.style.height = size+'px';
+      s.style.left = Math.random()*100+'vw';
+      s.style.animationDuration = (Math.random()*6 + 6)+'s';
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(), 14000);
+    }
+    setInterval(snow, 220);
+  </script>
 </body>
 </html>
