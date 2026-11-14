@@ -240,11 +240,25 @@
     };
 
     async function invokeDraw(action){
-      const {data,error}=await supabase.functions.invoke("draw-secret-santa",{body:{event_id:EVENT_ID,action}});
-      if(error)throw new Error(error.message||"Błąd funkcji losującej.");
-      if(data?.error)throw new Error(data.error);
-      return data;
-    }
+  const {data,error}=await supabase.functions.invoke(
+    "draw-secret-santa",
+    {body:{event_id:EVENT_ID,action}}
+  );
+
+  if(error){
+    let details = error.message || "Błąd funkcji losującej.";
+
+    try {
+      const body = await error.context.json();
+      details = body.error || body.message || JSON.stringify(body);
+    } catch(e) {}
+
+    throw new Error(details);
+  }
+
+  if(data?.error) throw new Error(data.error);
+  return data;
+}
     $("drawBtn").onclick=async()=>{
       if(!confirm("Na pewno wykonać losowanie? Po jego wykonaniu nie będzie można go powtórzyć z tego panelu."))return;
       $("drawBtn").disabled=true;message("adminMessage","Trwa losowanie…");
