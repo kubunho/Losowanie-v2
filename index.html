@@ -760,6 +760,35 @@ $("meetupAtInput").value=toLocalDateTime(v.data.meetup_at);
     function renderExclusions(){
       $("exclusionList").innerHTML=people.map(g=>`<div class="exclusion-row"><strong>${escapeHtml(g.name)}</strong><div class="checks">${people.filter(r=>r.id!==g.id).map(r=>{const checked=exclusions.some(x=>x.giver_id===g.id&&x.excluded_id===r.id);return `<label><input type="checkbox" data-giver="${g.id}" value="${r.id}" ${checked?"checked":""}> ${escapeHtml(r.name)}</label>`}).join("")}</div></div>`).join("");
     }
+    $("saveEventDates").onclick=async()=>{
+  message("datesMessage","");
+
+  const drawValue=$("drawAtInput").value;
+  const meetupValue=$("meetupAtInput").value;
+
+  if(!drawValue||!meetupValue){
+    message("datesMessage","Uzupełnij obie daty.",true);
+    return;
+  }
+
+  const drawDate=new Date(drawValue);
+  const meetupDate=new Date(meetupValue);
+
+  const {error}=await supabase.rpc("set_event_dates",{
+    p_event_id:EVENT_ID,
+    p_draw_at:drawDate.toISOString(),
+    p_meetup_at:meetupDate.toISOString()
+  });
+
+  if(error){
+    message("datesMessage","Nie udało się zapisać terminów: "+error.message,true);
+    return;
+  }
+
+  message("datesMessage","Terminy zostały zapisane.");
+  await loadAdminData();
+  await loadHomeData();
+};
     $("addPerson").onclick=async()=>{
       const name=$("newName").value.trim();if(!name)return;
       const {error}=await supabase.from("participants").insert({event_id:EVENT_ID,name});
