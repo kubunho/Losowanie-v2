@@ -136,6 +136,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script>
+      (function () {
     // Publiczne dane projektu Supabase. Klucz publishable/anon może być widoczny w przeglądarce.
     const SUPABASE_URL = "https://bdhzdlkmjruyfzkgblnn.supabase.co";
     const SUPABASE_KEY = "sb_publishable_fpXRsfB5mvjkkcPRzp7KSg_5ktIpQVU";
@@ -277,7 +278,8 @@
 
     // Jeśli ktoś wszedł z prywatnego linku, od razu pokaż ekran wyniku.
     const initialToken=getTokenFromUrl();
-    if(initialToken){$("tokenInput").value=initialToken;activate("publicPanel");$("publicPanel").classList.add("active");checkToken();}
-  </script>
+if(initialToken){$("tokenInput").value=initialToken;activate("publicPanel");$("publicPanel").classList.add("active");checkToken();}
+})();
+</script>
 </body>
 </html>
