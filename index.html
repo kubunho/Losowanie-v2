@@ -384,8 +384,17 @@
     function message(id, text, error=false){$(id).innerHTML = text ? `<div class="notice ${error?'error':''}">${escapeHtml(text)}</div>` : "";}
     function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
     function activate(view){
-  ["homeView","publicPanel","adminPanel","transferView"]
-    .forEach(id=>$(id).classList.toggle("hidden",id!==view));
+  const views = ["homeView","publicPanel","adminPanel","transferView"];
+
+  views.forEach(id => {
+    const element = $(id);
+
+    element.classList.toggle("hidden", id !== view);
+
+    if (["publicPanel","adminPanel","transferView"].includes(id)) {
+      element.classList.toggle("active", id === view);
+    }
+  });
 }
     function getTokenFromUrl(){return new URLSearchParams(location.search).get("token");}
 
