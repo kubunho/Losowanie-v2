@@ -752,11 +752,59 @@ $("meetupAtInput").value=toLocalDateTime(v.data.meetup_at);
       $("drawBtn").style.opacity=eventStatus==="drawn"?.45:1;
       renderPeople();renderExclusions();
     }
-    function renderPeople(){
-      $("peopleList").innerHTML=people.length?people.map(p=>`<div class="person"><div><span class="person-name">${escapeHtml(p.name)}</span></div><div class="person-actions"><button class="tiny" data-edit="${p.id}">Zmień</button><button class="tiny" data-delete="${p.id}">Usuń</button></div></div>`).join(""):'<p class="panel-sub">Brak uczestników.</p>';
-      $("peopleList").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editPerson(b.dataset.edit));
-      $("peopleList").querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deletePerson(b.dataset.delete));
-    }
+    async function generateParticipantPassword(participantId) {
+  const person = people.find(p => p.id === participantId);
+  if (!person) return;
+
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%";
+  const randomValues = crypto.getRandomValues(new Uint32Array(14));
+  const password = Array.from(
+    randomValues,
+    value => alphabet[value % alphabet.length]
+  ).join("");
+
+  const { error } = await supabase.rpc("set_participant_password", {
+    p_participant_id: participantId,
+    p_password: password
+  });
+
+  if (error) {
+    message("adminMessage", "Nie udało się ustawić hasła: " + error.message, true);
+    return;
+  }
+
+  window.prompt(
+    "Hasło dla " + person.name + ". Skopiuj je i przekaż tej osobie:",
+    password
+  );
+
+  message("adminMessage", "Hasło dla " + person.name + " zostało ustawione.");
+}
+
+function renderPeople(){
+  $("peopleList").innerHTML=people.length?people.map(p=>`
+    <div class="person">
+      <div><span class="person-name">${escapeHtml(p.name)}</span></div>
+      <div class="person-actions">
+        <button class="tiny" data-password="${p.id}">Generuj hasło</button>
+        <button class="tiny" data-edit="${p.id}">Zmień</button>
+        <button class="tiny" data-delete="${p.id}">Usuń</button>
+      </div>
+    </div>
+  `).join(""):'<p class="panel-sub">Brak uczestników.</p>';
+
+  $("peopleList").querySelectorAll("[data-password]").forEach(b=>{
+    b.onclick=()=>generateParticipantPassword(b.dataset.password);
+  });
+
+  $("peopleList").querySelectorAll("[data-edit]").forEach(b=>{
+    b.onclick=()=>editPerson(b.dataset.edit);
+  });
+
+  $("peopleList").querySelectorAll("[data-delete]").forEach(b=>{
+    b.onclick=()=>deletePerson(b.dataset.delete);
+  });
+}
     function renderExclusions(){
       $("exclusionList").innerHTML=people.map(g=>`<div class="exclusion-row"><strong>${escapeHtml(g.name)}</strong><div class="checks">${people.filter(r=>r.id!==g.id).map(r=>{const checked=exclusions.some(x=>x.giver_id===g.id&&x.excluded_id===r.id);return `<label><input type="checkbox" data-giver="${g.id}" value="${r.id}" ${checked?"checked":""}> ${escapeHtml(r.name)}</label>`}).join("")}</div></div>`).join("");
     }
