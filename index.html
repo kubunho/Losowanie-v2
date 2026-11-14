@@ -741,6 +741,12 @@ async function loadHomeData() {
   homeDrawAt = event.draw_at;
   homeMeetupAt = event.meetup_at;
   homeEventStatus = event.status;
+  console.log("TEST LOSOWANIA:", {
+  status: homeEventStatus,
+  drawAt: homeDrawAt,
+  teraz: new Date().toISOString(),
+  czyTerminMinal: Date.now() >= new Date(homeDrawAt).getTime()
+});
 
   grid.innerHTML = homeParticipants.map(person => `
     <button class="participant-card" data-participant="${person.id}" disabled>
