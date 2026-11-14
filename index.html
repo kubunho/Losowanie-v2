@@ -217,6 +217,34 @@
   }
 }
 
+/* ===== RESET LOSOWANIA ===== */
+
+#resetBtn {
+  border: 1px solid #9b5552;
+  background: #482b30;
+  color: #f0d8d0;
+  border-radius: 999px;
+  padding: 11px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  transition: .2s ease;
+}
+
+#resetBtn:hover:not(:disabled) {
+  background: #653538;
+  border-color: #c17b70;
+  color: #fff3e8;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 18px #0004;
+}
+
+#resetBtn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  filter: grayscale(.5);
+}
+
     @media(max-width:700px){.wrap{width:min(100% - 28px,560px)}header{height:72px}.brand{font-size:14px}main{padding:54px 0}.admin-grid{grid-template-columns:1fr}.panel{padding:18px}.gift-card{padding:28px 18px}.subtitle{letter-spacing:.05em}.footer-mark{margin-top:48px}}
   </style>
 </head>
