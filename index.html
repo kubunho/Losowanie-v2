@@ -720,15 +720,32 @@ async function loadHomeData() {
   if (homeCountdownTimer) clearInterval(homeCountdownTimer);
   homeCountdownTimer = setInterval(updateHomeCountdowns, 1000);
 }
+    function toLocalDateTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+
+  const pad = n => String(n).padStart(2, "0");
+
+  return date.getFullYear() + "-" +
+    pad(date.getMonth() + 1) + "-" +
+    pad(date.getDate()) + "T" +
+    pad(date.getHours()) + ":" +
+    pad(date.getMinutes());
+}
     async function loadAdminData(){
       message("adminMessage","");
       const [p,e,v]=await Promise.all([
         supabase.from("participants").select("id,name").eq("event_id",EVENT_ID).order("name"),
         supabase.from("exclusions").select("giver_id,excluded_id").eq("event_id",EVENT_ID),
-        supabase.from("events").select("status").eq("id",EVENT_ID).single()
+        supabase.from("events").select("status,draw_at,meetup_at").eq("id",EVENT_ID).single()
       ]);
       if(p.error||e.error||v.error){message("adminMessage","Nie udało się pobrać danych. Sprawdź polityki RLS i połączenie.",true);return;}
-      people=p.data||[];exclusions=e.data||[];eventStatus=v.data.status;
+      people=p.data||[];
+exclusions=e.data||[];
+eventStatus=v.data.status;
+
+$("drawAtInput").value=toLocalDateTime(v.data.draw_at);
+$("meetupAtInput").value=toLocalDateTime(v.data.meetup_at);
       $("eventStatus").textContent=eventStatus==="drawn"?"Losowanie zostało już wykonane. Możesz ponownie pobrać prywatne linki i kody QR.":"Losowanie nie zostało jeszcze wykonane.";
       $("drawBtn").disabled=eventStatus==="drawn";
       $("resetBtn").disabled=eventStatus!=="drawn";
