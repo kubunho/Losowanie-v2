@@ -708,7 +708,46 @@ if (meetupDateDisplay) {
   updateCountdown("meetupCountdown", homeMeetupAt);
   updateParticipantAvailability();
 }
+$("participantGrid").addEventListener("click", async e => {
+  const button = e.target.closest(".participant-card");
 
+  if (!button || button.disabled) return;
+
+  const participantId = button.dataset.participant;
+  const person = homeParticipants.find(p => p.id === participantId);
+
+  if (!person) return;
+
+  const password = prompt("Podaj hasło dla: " + person.name);
+
+  if (password === null || password === "") return;
+
+  const { data, error } = await supabase.rpc("get_my_draw_by_password", {
+    p_event_id: EVENT_ID,
+    p_participant_id: participantId,
+    p_password: password
+  });
+
+  if (error) {
+    alert("Nie udało się sprawdzić hasła. Spróbuj ponownie.");
+    console.error(error);
+    return;
+  }
+
+  const result = Array.isArray(data) ? data[0] : data;
+
+  if (!result) {
+    alert("Nieprawidłowe hasło lub wynik nie jest dostępny.");
+    return;
+  }
+
+  $("giverName").textContent = result.giver_name;
+  $("resultName").textContent = result.recipient_name;
+
+  show("tokenEntry", false);
+  show("publicResult", true);
+  activate("publicPanel");
+});
 async function loadHomeData() {
   const [participantsResult, eventResult] = await Promise.all([
     supabase.rpc("get_public_participants", {
