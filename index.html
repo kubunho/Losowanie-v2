@@ -355,16 +355,40 @@
     $("tokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")checkToken();});
 
     async function checkToken(){
-      const token=$("tokenInput").value.trim()||getTokenFromUrl();
-      message("publicMessage","");show("publicResult",false);
-      if(!token){message("publicMessage","Wklej kod z prywatnego linku.",true);return;}
-      const {data,error}=await supabase.rpc("get_my_draw",{p_token:token});
-      if(error){message("publicMessage","Nie udało się sprawdzić kodu. Spróbuj ponownie.",true);return;}
-      let row=Array.isArray(data)?data[0]:data;
-      const recipient=typeof row==="string"?row:(row?.recipient_name||row?.name||row?.recipient||row?.get_my_draw);
-      if(!recipient){message("publicMessage","Nie znaleziono wyniku dla tego kodu. Sprawdź, czy link jest kompletny.",true);return;}
-      $("resultName").textContent=recipient;show("publicResult",true);
-    }
+  const token=$("tokenInput").value.trim()||getTokenFromUrl();
+  message("publicMessage","");
+  show("publicResult",false);
+
+  if(!token){
+    message("publicMessage","Wklej kod z prywatnego linku.",true);
+    return;
+  }
+
+  const {data,error}=await supabase.rpc("get_my_draw",{p_token:token});
+
+  if(error){
+    message("publicMessage","Nie udało się sprawdzić kodu. Spróbuj ponownie.",true);
+    return;
+  }
+
+  const row=Array.isArray(data)?data[0]:data;
+  const giver=row?.giver_name;
+  const recipient=row?.recipient_name;
+
+  if(!giver || !recipient){
+    message("publicMessage","Nie znaleziono wyniku dla tego kodu. Sprawdź, czy link jest kompletny.",true);
+    return;
+  }
+
+  $("resultName").textContent=recipient;
+
+  const giverElement=$("giverName");
+  if(giverElement){
+    giverElement.textContent=giver;
+  }
+
+  show("publicResult",true);
+}
 
     async function adminCheck(){
       const {data,error}=await supabase.rpc("is_admin");
