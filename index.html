@@ -742,6 +742,54 @@ async function loadHomeData() {
     pad(date.getHours()) + ":" +
     pad(date.getMinutes());
 }
+    async function loadParticipantPasswords(){
+  const container=$("participantPasswords");
+
+  container.innerHTML='<p class="panel-sub">Ładowanie haseł...</p>';
+
+  const {data,error}=await supabase.rpc("get_participant_passwords");
+
+  if(error){
+    container.innerHTML='<p class="panel-sub">Nie udało się pobrać haseł: '+escapeHtml(error.message)+'</p>';
+    return;
+  }
+
+  const rows=data||[];
+
+  container.innerHTML=rows.map(person=>`
+    <div class="person">
+      <div>
+        <strong class="person-name">${escapeHtml(person.participant_name)}</strong>
+        <div class="panel-sub">${person.participant_password ? escapeHtml(person.participant_password) : "Brak ustawionego hasła"}</div>
+      </div>
+      <button class="tiny" data-set-password="${person.participant_id}">Ustaw hasło</button>
+    </div>
+  `).join("") || '<p class="panel-sub">Brak uczestników.</p>';
+
+  container.querySelectorAll("[data-set-password]").forEach(button=>{
+    button.onclick=async()=>{
+      const person=rows.find(p=>p.participant_id===button.dataset.setPassword);
+      if(!person)return;
+
+      const password=prompt("Ustaw hasło dla "+person.participant_name+":",person.participant_password||"");
+
+      if(password===null)return;
+
+      const {error}=await supabase.rpc("set_participant_password",{
+        p_participant_id:person.participant_id,
+        p_password:password
+      });
+
+      if(error){
+        message("adminMessage","Nie udało się ustawić hasła: "+error.message,true);
+        return;
+      }
+
+      await loadParticipantPasswords();
+      message("adminMessage","Hasło dla "+person.participant_name+" zostało zapisane.");
+    };
+  });
+}
     async function loadAdminData(){
       message("adminMessage","");
       const [p,e,v]=await Promise.all([
@@ -760,7 +808,9 @@ $("meetupAtInput").value=toLocalDateTime(v.data.meetup_at);
       $("drawBtn").disabled=eventStatus==="drawn";
       $("resetBtn").disabled=eventStatus!=="drawn";
       $("drawBtn").style.opacity=eventStatus==="drawn"?.45:1;
-      renderPeople();renderExclusions();
+      renderPeople();
+renderExclusions();
+await loadParticipantPasswords();
     }
     async function generateParticipantPassword(participantId) {
   const person = people.find(p => p.id === participantId);
