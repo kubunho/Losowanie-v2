@@ -455,7 +455,26 @@
           <button class="secondary" id="logoutBtn">Wyloguj</button>
         </div>
         <div id="adminMessage"></div>
-        <div class="admin-grid">
+
+<div class="admin-box" style="margin-top:20px">
+  <h3>Terminy wydarzenia</h3>
+  <p class="panel-sub">Zmieniaj daty bezpośrednio z panelu administratora.</p>
+
+  <div class="field">
+    <label for="drawAtInput">Termin losowania</label>
+    <input type="datetime-local" id="drawAtInput">
+  </div>
+
+  <div class="field">
+    <label for="meetupAtInput">Termin spotkania</label>
+    <input type="datetime-local" id="meetupAtInput">
+  </div>
+
+  <button class="primary" id="saveEventDates">Zapisz terminy</button>
+  <div id="datesMessage"></div>
+</div>
+
+<div class="admin-grid">
           <div class="admin-box">
             <h3>Uczestnicy</h3>
             <div class="field"><input id="newName" placeholder="Imię / nick uczestnika"><button class="primary" id="addPerson">Dodaj</button></div>
