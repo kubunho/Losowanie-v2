@@ -367,6 +367,16 @@
   filter: grayscale(.5);
 }
 
+    .password-reveal {
+  filter: blur(5px);
+  cursor: pointer;
+  transition: filter 0.2s ease;
+  user-select: none;
+}
+
+.password-reveal:hover {
+  filter: blur(0);
+}
     @media(max-width:700px){.wrap{width:min(100% - 28px,560px)}header{height:72px}.brand{font-size:14px}main{padding:54px 0}.admin-grid{grid-template-columns:1fr}.panel{padding:18px}.gift-card{padding:28px 18px}.subtitle{letter-spacing:.05em}.footer-mark{margin-top:48px}}
   </style>
 </head>
@@ -829,10 +839,10 @@ async function loadHomeData() {
       <div>
         <strong class="person-name">${escapeHtml(person.participant_name)}</strong>
         <div class="panel-sub">
-          ${person.participant_password
-            ? "Hasło: "+escapeHtml(person.participant_password)
-            : "Brak ustawionego hasła"}
-        </div>
+  ${person.participant_password
+    ? `Hasło: <span class="password-reveal" title="Najedź, aby odkryć">${escapeHtml(person.participant_password)}</span>`
+    : "Brak ustawionego hasła"}
+</div>
       </div>
 
       ${person.participant_password
