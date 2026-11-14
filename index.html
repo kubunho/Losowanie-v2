@@ -26,6 +26,120 @@
     .rule{width:min(500px,75%);height:1px;background:linear-gradient(90deg,transparent,#a98b6b,transparent);margin:0 auto 34px;position:relative}
     .rule:after{content:"✦";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:0 15px;background:#17232d;color:var(--gold);font-size:14px}
     .gift-card{width:min(480px,100%);padding:34px 32px 30px;background:linear-gradient(145deg,#17232deF,#101923f2);border:1px solid #a98b6b88;border-radius:18px;box-shadow:0 22px 70px #0006}
+    /* ===== LICZNIKI I LISTA UCZESTNIKÓW ===== */
+
+.home-countdowns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  width: min(760px, 100%);
+  margin: 0 auto 28px;
+}
+
+.countdown-card {
+  padding: 20px;
+  background: linear-gradient(145deg, #1c2933, #101923);
+  border: 1px solid #a98b6b66;
+  border-radius: 14px;
+}
+
+.countdown-title {
+  color: var(--gold);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.countdown-date {
+  color: var(--cream);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 25px;
+  margin-bottom: 12px;
+}
+
+.countdown-clock {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.countdown-unit {
+  min-width: 48px;
+}
+
+.countdown-unit strong {
+  display: block;
+  color: var(--white);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 32px;
+}
+
+.countdown-unit span {
+  color: var(--muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.countdown-finished {
+  color: var(--gold);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+
+.participant-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.participant-card {
+  min-height: 82px;
+  padding: 16px 10px;
+  border: 1px solid #a98b6b66;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #1c2933, #17232d);
+  color: var(--cream);
+  font-weight: 700;
+  font-size: 15px;
+  transition: .2s ease;
+}
+
+.participant-card:not(:disabled):hover {
+  background: #29413e;
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+.participant-card:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+@media(max-width:600px) {
+  .home-countdowns {
+    grid-template-columns: 1fr;
+  }
+
+  .participant-grid {
+    gap: 8px;
+  }
+
+  .participant-card {
+    min-height: 70px;
+    padding: 12px 5px;
+    font-size: 12px;
+  }
+
+  .countdown-clock {
+    gap: 8px;
+  }
+}
     .gift-icon{font-size:42px;color:var(--gold);line-height:1;margin-bottom:16px}
     .gift-card h2{font-size:22px;font-weight:500;margin:0 0 22px;color:var(--cream)}
     .primary{border:0;border-radius:999px;background:var(--red);color:#fff3e8;padding:13px 30px;font-weight:700;letter-spacing:.04em;min-width:180px;transition:.2s}
