@@ -742,7 +742,7 @@ async function loadHomeData() {
     pad(date.getHours()) + ":" +
     pad(date.getMinutes());
 }
-    async function loadParticipantPasswords(){
+   async function loadParticipantPasswords(){
   const container=$("participantPasswords");
 
   container.innerHTML='<p class="panel-sub">Ładowanie haseł...</p>';
@@ -760,9 +760,17 @@ async function loadHomeData() {
     <div class="person">
       <div>
         <strong class="person-name">${escapeHtml(person.participant_name)}</strong>
-        <div class="panel-sub">${person.participant_password ? escapeHtml(person.participant_password) : "Brak ustawionego hasła"}</div>
+        <div class="panel-sub">
+          ${person.participant_password
+            ? "Hasło: "+escapeHtml(person.participant_password)
+            : "Brak ustawionego hasła"}
+        </div>
       </div>
-      <button class="tiny" data-set-password="${person.participant_id}">Ustaw hasło</button>
+
+      ${person.participant_password
+        ? '<span class="panel-sub">Hasło przypisane</span>'
+        : `<button class="tiny" data-set-password="${person.participant_id}">Ustaw hasło</button>`
+      }
     </div>
   `).join("") || '<p class="panel-sub">Brak uczestników.</p>';
 
@@ -771,9 +779,16 @@ async function loadHomeData() {
       const person=rows.find(p=>p.participant_id===button.dataset.setPassword);
       if(!person)return;
 
-      const password=prompt("Ustaw hasło dla "+person.participant_name+":",person.participant_password||"");
+      const password=prompt("Ustaw stałe hasło dla "+person.participant_name+":");
 
       if(password===null)return;
+
+      if(password.length<4){
+        message("adminMessage","Hasło musi mieć co najmniej 4 znaki.",true);
+        return;
+      }
+
+      button.disabled=true;
 
       const {error}=await supabase.rpc("set_participant_password",{
         p_participant_id:person.participant_id,
@@ -782,11 +797,12 @@ async function loadHomeData() {
 
       if(error){
         message("adminMessage","Nie udało się ustawić hasła: "+error.message,true);
+        button.disabled=false;
         return;
       }
 
-      await loadParticipantPasswords();
       message("adminMessage","Hasło dla "+person.participant_name+" zostało zapisane.");
+      await loadParticipantPasswords();
     };
   });
 }
