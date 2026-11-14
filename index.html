@@ -339,9 +339,21 @@
             <button class="secondary" id="retrieveBtn">Pobierz linki i kody QR</button>
             <button class="danger" id="resetBtn">Resetuj losowanie</button>
           </div>
-          <div id="qrList" class="results"></div>
         </div>
       </section>
+      <section class="panel hidden" id="transferView">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <div>
+      <h2>Przekazywanie prezentów</h2>
+      <p class="panel-sub">ALE ATAK · CHRISTMAS EDITION 2026</p>
+    </div>
+    <button class="secondary" id="backToAdmin">Panel administratora</button>
+  </div>
+
+  <div id="qrList" class="results"></div>
+
+</section>
     </main>
   </div>
 
@@ -370,7 +382,10 @@
     const show = (id, yes=true) => $(id).classList.toggle("hidden", !yes);
     function message(id, text, error=false){$(id).innerHTML = text ? `<div class="notice ${error?'error':''}">${escapeHtml(text)}</div>` : "";}
     function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-    function activate(view){["homeView","publicPanel","adminPanel"].forEach(id=>$(id).classList.toggle("hidden",id!==view));}
+    function activate(view){
+  ["homeView","publicPanel","adminPanel","transferView"]
+    .forEach(id=>$(id).classList.toggle("hidden",id!==view));
+}
     function getTokenFromUrl(){return new URLSearchParams(location.search).get("token");}
 
     $("adminOpen").onclick=async()=>{const {data:{session}}=await supabase.auth.getSession();if(session){await openAdmin();}else{$("loginModal").classList.add("open");}};
@@ -502,13 +517,30 @@ show("publicResult",true);
   if(data?.error) throw new Error(data.error);
   return data;
 }
-    $("drawBtn").onclick=async()=>{
-      if(!confirm("Na pewno wykonać losowanie? Po jego wykonaniu nie będzie można go powtórzyć z tego panelu."))return;
-      $("drawBtn").disabled=true;message("adminMessage","Trwa losowanie…");
-      try{await invokeDraw("draw");await loadAdminData();await showLinks();}
-      catch(e){message("adminMessage",e.message,true);$("drawBtn").disabled=false;}
-    };
-    $("retrieveBtn").onclick=showLinks;
+   $("drawBtn").onclick=async()=>{
+  if(!confirm("Na pewno wykonać losowanie? Po jego wykonaniu nie będzie można go powtórzyć z tego panelu."))return;
+
+  $("drawBtn").disabled=true;
+  message("adminMessage","Trwa losowanie…");
+
+  try{
+    await invokeDraw("draw");
+    await loadAdminData();
+    await showLinks();
+    activate("transferView");
+  }
+  catch(e){
+    message("adminMessage",e.message,true);
+    $("drawBtn").disabled=false;
+  }
+};
+
+$("retrieveBtn").onclick=async()=>{
+  await showLinks();
+  activate("transferView");
+};
+
+$("backToAdmin").onclick=()=>activate("adminPanel");
         $("resetBtn").onclick = async () => {
   if (eventStatus !== "drawn") {
     message("adminMessage", "Nie ma aktywnego losowania do zresetowania.", true);
