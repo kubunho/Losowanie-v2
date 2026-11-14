@@ -250,7 +250,7 @@
 
     try {
       const body = await error.context.json();
-      details = body.error || body.message || JSON.stringify(body);
+      details = JSON.stringify(body);
     } catch(e) {}
 
     throw new Error(details);
