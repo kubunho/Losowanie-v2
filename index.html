@@ -545,7 +545,6 @@
     };
     $("passwordInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("loginBtn").click();});
     $("logoutBtn").onclick=async()=>{await supabase.auth.signOut();$("adminPanel").classList.remove("active");activate("homeView");};
-    $("revealOpen").onclick=()=>{activate("publicPanel");$("publicPanel").classList.add("active");};
     $("backHome").onclick=()=>{activate("homeView");};
     $("checkToken").onclick=checkToken;
     $("tokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")checkToken();});
