@@ -378,7 +378,7 @@
   <div class="home-countdowns">
     <div class="countdown-card">
       <div class="countdown-title">Wielkie losowanie</div>
-      <div class="countdown-date">04.12.2026 · 21:00</div>
+      <div class="countdown-date" id="drawDateDisplay">Ładowanie terminu...</div>
       <div id="drawCountdown" class="countdown-clock">
         <div class="countdown-finished">ŁADOWANIE...</div>
       </div>
@@ -386,7 +386,7 @@
 
     <div class="countdown-card">
       <div class="countdown-title">Spotkanie ALE ATAK</div>
-      <div class="countdown-date">09.01.2027 · 18:00</div>
+      <div class="countdown-date" id="meetupDateDisplay">Ładowanie terminu...</div>
       <div id="meetupCountdown" class="countdown-clock">
         <div class="countdown-finished">ŁADOWANIE...</div>
       </div>
@@ -652,7 +652,7 @@ function updateCountdown(elementId, dateValue) {
   const difference = new Date(dateValue).getTime() - Date.now();
 
   if (difference <= 0) {
-    element.innerHTML = '<div class="countdown-finished">TEN DZIEŃ NADCHODZI!</div>';
+    element.innerHTML = '<div class="countdown-finished">SPRAWDŹ LOSOWANIE</div>';
     return;
   }
 
@@ -681,6 +681,21 @@ function updateParticipantAvailability() {
 }
 
 function updateHomeCountdowns() {
+  const drawDateDisplay = $("drawDateDisplay");
+const meetupDateDisplay = $("meetupDateDisplay");
+
+if (drawDateDisplay) {
+  drawDateDisplay.textContent = homeDrawAt
+    ? formatEventDate(homeDrawAt)
+    : "Brak ustalonego terminu";
+}
+
+if (meetupDateDisplay) {
+  meetupDateDisplay.textContent = homeMeetupAt
+    ? formatEventDate(homeMeetupAt)
+    : "Brak ustalonego terminu";
+}
+
   updateCountdown("drawCountdown", homeDrawAt);
   updateCountdown("meetupCountdown", homeMeetupAt);
   updateParticipantAvailability();
