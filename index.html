@@ -293,27 +293,115 @@
       if(Array.isArray(data))return data;
       return data?.draws||data?.results||data?.assignments||data?.participants||[];
     }
-    async function showLinks(){
-      message("adminMessage","Pobieram prywatne linki…");$("qrList").innerHTML="";
-      try{
-        const data=await invokeDraw("retrieve");const rows=normalizeDraws(data);
-        if(!rows.length)throw new Error("Funkcja nie zwróciła listy linków. Sprawdź format odpowiedzi Edge Function.");
-        $("qrList").innerHTML="<h3 style='margin-top:20px'>Prywatne linki dla uczestników</h3><p class='panel-sub'>Każdy link przekaż wyłącznie właściwej osobie.</p>";
-        rows.forEach((r,i)=>{
-          const name=r.giver_name||r.name||people.find(p=>p.id===(r.giver_id||r.participant_id))?.name||`Uczestnik ${i+1}`;
-          const token=r.token||r.private_token||r.access_token;
-          if(!token)return;
-          const url=`${location.origin}${location.pathname}?token=${encodeURIComponent(token)}`;
-          const id=`qr-${i}`;
-          const item=document.createElement("div");item.className="result-row";item.innerHTML=`<div><strong>${escapeHtml(name)}</strong><br><a class="result-link" href="${url}" target="_blank" rel="noopener">${escapeHtml(url)}</a></div><div style="display:flex;gap:8px;align-items:center"><button class="tiny copy">Kopiuj</button><div id="${id}"></div></div>`;
-          $("qrList").appendChild(item);
-          item.querySelector(".copy").onclick=()=>navigator.clipboard.writeText(url).then(()=>message("adminMessage",`Skopiowano link: ${name}`)).catch(()=>message("adminMessage","Nie udało się skopiować linku.",true));
-          if(window.QRCode)new QRCode(item.querySelector("#"+id),{text:url,width:76,height:76,colorDark:"#101923",colorLight:"#ffffff"});
-        });
-        if(!$("qrList").querySelector(".result-row"))throw new Error("Odpowiedź funkcji nie zawiera tokenów uczestników.");
-        message("adminMessage","Linki gotowe. Przekaż każdemu tylko jego własny link.");
-      }catch(e){message("adminMessage",e.message,true);}
+    
+async function showLinks() {
+  message("adminMessage", "Pobieram listę uczestników…");
+  $("qrList").innerHTML = "";
+
+  try {
+    const data = await invokeDraw("retrieve");
+    const rows = normalizeDraws(data);
+
+    if (!rows.length) {
+      throw new Error("Nie znaleziono przypisań.");
     }
+
+    const validRows = rows.filter(r =>
+      r.token || r.private_token || r.access_token
+    );
+
+    if (!validRows.length) {
+      throw new Error("Brak prywatnych tokenów.");
+    }
+
+    $("qrList").innerHTML = `
+      <h3 style="margin-top:20px">Przekazywanie prezentów</h3>
+      <p class="panel-sub">
+        Kliknij osobę, której chcesz przekazać prywatny link.
+        Pozostałe linki są ukryte.
+      </p>
+      <div id="participantList"></div>
+      <div id="selectedParticipant" style="margin-top:20px"></div>
+    `;
+
+    const list = $("participantList");
+    const selected = $("selectedParticipant");
+
+    validRows.forEach((r, i) => {
+      const name =
+        r.giver_name ||
+        r.name ||
+        people.find(p => p.id === (r.giver_id || r.participant_id))?.name ||
+        `Uczestnik ${i + 1}`;
+
+      const token = r.token || r.private_token || r.access_token;
+
+      const url =
+        `${location.origin}${location.pathname}?token=${encodeURIComponent(token)}`;
+
+      const button = document.createElement("button");
+      button.className = "result-row";
+      button.style.width = "100%";
+      button.style.textAlign = "left";
+      button.style.cursor = "pointer";
+      button.style.marginBottom = "8px";
+
+      button.innerHTML = `
+        <strong>${escapeHtml(name)}</strong>
+        <span style="float:right">Pokaż link →</span>
+      `;
+
+      button.onclick = () => {
+        selected.innerHTML = `
+          <div class="result-row" style="display:block;text-align:center;padding:24px">
+            <h3>${escapeHtml(name)}</h3>
+            <p class="panel-sub">Prywatny kod QR</p>
+            <div id="selectedQR"
+              style="display:flex;justify-content:center;background:white;padding:16px;border-radius:12px;width:max-content;margin:16px auto">
+            </div>
+            <p class="panel-sub">Link do wysłania na Discordzie</p>
+            <input
+              id="selectedLink"
+              value="${escapeHtml(url)}"
+              readonly
+              style="width:100%;margin-bottom:10px"
+            >
+            <button class="tiny copy" id="copySelected">
+              Kopiuj prywatny link
+            </button>
+          </div>
+        `;
+
+        const qr = $("selectedQR");
+
+        if (window.QRCode) {
+          new QRCode(qr, {
+            text: url,
+            width: 220,
+            height: 220,
+            colorDark: "#101923",
+            colorLight: "#ffffff"
+          });
+        } else {
+          qr.textContent = "Nie udało się załadować kodu QR.";
+        }
+
+        $("copySelected").onclick = () =>
+          navigator.clipboard.writeText(url)
+            .then(() => message("adminMessage", `Skopiowano link: ${name}`))
+            .catch(() => message("adminMessage", "Nie udało się skopiować linku.", true));
+      };
+
+      list.appendChild(button);
+    });
+
+    message("adminMessage", "Lista uczestników gotowa. Wybierz osobę.");
+
+  } catch (e) {
+    message("adminMessage", e.message, true);
+  }
+}
+
 
     // Jeśli ktoś wszedł z prywatnego linku, od razu pokaż ekran wyniku.
     const initialToken=getTokenFromUrl();
