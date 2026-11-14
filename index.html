@@ -592,6 +592,116 @@ show("publicResult",true);
       try{await adminCheck();activate("adminPanel");$("adminPanel").classList.add("active");await loadAdminData();}
       catch(e){message("adminMessage",e.message,true);$("loginModal").classList.remove("open");}
     }
+        // ===== STRONA GŁÓWNA: UCZESTNICY I LICZNIKI =====
+
+let homeParticipants = [];
+let homeDrawAt = null;
+let homeMeetupAt = null;
+let homeEventStatus = null;
+let homeCountdownTimer = null;
+
+function formatEventDate(value) {
+  if (!value) return "Brak daty";
+  return new Date(value).toLocaleString("pl-PL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Warsaw"
+  });
+}
+
+function updateCountdown(elementId, dateValue) {
+  const element = $(elementId);
+  if (!element) return;
+
+  if (!dateValue) {
+    element.innerHTML = '<div class="countdown-finished">BRAK DATY</div>';
+    return;
+  }
+
+  const difference = new Date(dateValue).getTime() - Date.now();
+
+  if (difference <= 0) {
+    element.innerHTML = '<div class="countdown-finished">TEN DZIEŃ NADCHODZI!</div>';
+    return;
+  }
+
+  const days = Math.floor(difference / 86400000);
+  const hours = Math.floor((difference % 86400000) / 3600000);
+  const minutes = Math.floor((difference % 3600000) / 60000);
+  const seconds = Math.floor((difference % 60000) / 1000);
+
+  element.innerHTML = `
+    <div class="countdown-unit"><strong>${days}</strong><span>dni</span></div>
+    <div class="countdown-unit"><strong>${String(hours).padStart(2,"0")}</strong><span>godz.</span></div>
+    <div class="countdown-unit"><strong>${String(minutes).padStart(2,"0")}</strong><span>min</span></div>
+    <div class="countdown-unit"><strong>${String(seconds).padStart(2,"0")}</strong><span>sek</span></div>
+  `;
+}
+
+function updateParticipantAvailability() {
+  const ready =
+    homeEventStatus === "drawn" &&
+    homeDrawAt &&
+    Date.now() >= new Date(homeDrawAt).getTime();
+
+  document.querySelectorAll(".participant-card").forEach(button => {
+    button.disabled = !ready;
+  });
+}
+
+function updateHomeCountdowns() {
+  updateCountdown("drawCountdown", homeDrawAt);
+  updateCountdown("meetupCountdown", homeMeetupAt);
+  updateParticipantAvailability();
+}
+
+async function loadHomeData() {
+  const [participantsResult, eventResult] = await Promise.all([
+    supabase.rpc("get_public_participants", {
+      p_event_id: EVENT_ID
+    }),
+    supabase.rpc("get_public_event_info", {
+      p_event_id: EVENT_ID
+    })
+  ]);
+
+  const grid = $("participantGrid");
+
+  if (participantsResult.error || eventResult.error) {
+    grid.innerHTML = '<p class="panel-sub">Nie udało się pobrać danych wydarzenia.</p>';
+    console.error(participantsResult.error || eventResult.error);
+    return;
+  }
+
+  homeParticipants = participantsResult.data || [];
+
+  const event = Array.isArray(eventResult.data)
+    ? eventResult.data[0]
+    : eventResult.data;
+
+  if (!event) {
+    grid.innerHTML = '<p class="panel-sub">Nie znaleziono wydarzenia.</p>';
+    return;
+  }
+
+  homeDrawAt = event.draw_at;
+  homeMeetupAt = event.meetup_at;
+  homeEventStatus = event.status;
+
+  grid.innerHTML = homeParticipants.map(person => `
+    <button class="participant-card" data-participant="${person.id}" disabled>
+      ${escapeHtml(person.name)}
+    </button>
+  `).join("");
+
+  updateHomeCountdowns();
+
+  if (homeCountdownTimer) clearInterval(homeCountdownTimer);
+  homeCountdownTimer = setInterval(updateHomeCountdowns, 1000);
+}
     async function loadAdminData(){
       message("adminMessage","");
       const [p,e,v]=await Promise.all([
