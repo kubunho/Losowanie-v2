@@ -1,2 +1,2 @@
 # Losowanie Ale Atak!
-**https://kubunho.github.io/Losowanie-v2/**
+**https://kubunho.github.io/Losowanie_2026/**
