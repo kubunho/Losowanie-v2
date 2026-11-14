@@ -116,6 +116,7 @@
           <div class="admin-actions">
             <button class="primary" id="drawBtn">Przeprowadź losowanie</button>
             <button class="secondary" id="retrieveBtn">Pobierz linki i kody QR</button>
+            <button class="danger" id="resetBtn">Resetuj losowanie</button>
           </div>
           <div id="qrList" class="results"></div>
         </div>
@@ -197,6 +198,7 @@
       people=p.data||[];exclusions=e.data||[];eventStatus=v.data.status;
       $("eventStatus").textContent=eventStatus==="drawn"?"Losowanie zostało już wykonane. Możesz ponownie pobrać prywatne linki i kody QR.":"Losowanie nie zostało jeszcze wykonane.";
       $("drawBtn").disabled=eventStatus==="drawn";
+      $("resetBtn").disabled=eventStatus!=="drawn";
       $("drawBtn").style.opacity=eventStatus==="drawn"?.45:1;
       renderPeople();renderExclusions();
     }
@@ -250,6 +252,29 @@
       catch(e){message("adminMessage",e.message,true);$("drawBtn").disabled=false;}
     };
     $("retrieveBtn").onclick=showLinks;
+        $("resetBtn").onclick = async () => {
+  if (eventStatus !== "drawn") {
+    message("adminMessage", "Nie ma aktywnego losowania do zresetowania.", true);
+    return;
+  }
+
+  if (!confirm("UWAGA! Czy na pewno zresetować losowanie? Wszystkie przypisania i stare linki przestaną działać. Uczestnicy i wykluczenia zostaną zachowani.")) return;
+
+  $("resetBtn").disabled = true;
+  $("drawBtn").disabled = true;
+  message("adminMessage", "Resetuję losowanie...");
+
+  try {
+    await invokeDraw("reset");
+    $("qrList").innerHTML = "";
+    await loadAdminData();
+    message("adminMessage", "Losowanie zresetowane! Możesz wykonać nowe.");
+  } catch (e) {
+    message("adminMessage", e.message, true);
+  } finally {
+    $("resetBtn").disabled = false;
+  }
+};
     function normalizeDraws(data){
       if(Array.isArray(data))return data;
       return data?.draws||data?.results||data?.assignments||data?.participants||[];
