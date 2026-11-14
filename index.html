@@ -58,6 +58,165 @@
     .hidden{display:none!important}
     #resultName{font-family:"Barlow Condensed";font-size:42px;color:var(--gold);margin:8px 0}
     #qrList canvas,#qrList img{background:#fff;padding:8px;border-radius:6px}
+    
+/* ===== CHRISTMAS SECRET SANTA – PANEL WYNIKÓW ===== */
+
+#qrList {
+  margin-top: 28px;
+  animation: resultsAppear .35s ease;
+}
+
+#qrList h3 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 30px;
+  letter-spacing: .06em;
+  color: var(--cream);
+  margin: 0 0 8px;
+}
+
+#qrList > .panel-sub {
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+/* Lista uczestników */
+
+#participantList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#participantList .result-row {
+  min-height: 64px;
+  padding: 16px 18px;
+  border: 1px solid #ffffff16;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #1c2933, #17232d);
+  color: var(--cream);
+  font-size: 14px;
+  transition: .2s ease;
+}
+
+#participantList .result-row:hover {
+  background: #263640;
+  border-color: #c9a47788;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px #0003;
+}
+
+#participantList .result-row strong {
+  font-size: 15px;
+  letter-spacing: .02em;
+}
+
+#participantList .result-row span {
+  color: var(--gold);
+  font-size: 11px;
+  letter-spacing: .04em;
+}
+
+/* Panel wybranej osoby */
+
+#selectedParticipant {
+  animation: resultsAppear .3s ease;
+}
+
+#selectedParticipant > .result-row {
+  display: block;
+  text-align: center;
+  padding: 30px 24px !important;
+  border: 1px solid #c9a47788;
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #29413e 0%, transparent 65%),
+    linear-gradient(145deg, #1c2933, #101923);
+  box-shadow: 0 18px 55px #0005;
+}
+
+#selectedParticipant h3 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 32px;
+  color: var(--cream);
+  letter-spacing: .06em;
+  margin: 0 0 8px;
+}
+
+#selectedParticipant .panel-sub {
+  margin: 12px 0;
+}
+
+/* Duży kod QR */
+
+#selectedQR {
+  margin: 22px auto !important;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px #0005;
+}
+
+#selectedQR canvas,
+#selectedQR img {
+  display: block;
+  padding: 0 !important;
+  border-radius: 2px !important;
+}
+
+/* Prywatny link */
+
+#selectedLink {
+  display: block;
+  width: 100%;
+  max-width: 540px;
+  margin: 12px auto;
+  padding: 13px 15px;
+  background: #0d161e;
+  border: 1px solid #53606a;
+  border-radius: 8px;
+  color: var(--cream);
+  font-size: 12px;
+  text-align: center;
+}
+
+#copySelected {
+  margin-top: 8px;
+  padding: 12px 25px;
+  border: 1px solid #c9a47799;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff3e8;
+  font-size: 13px;
+  font-weight: 700;
+  transition: .2s ease;
+}
+
+#copySelected:hover {
+  background: #a43a37;
+  transform: translateY(-1px);
+}
+
+@keyframes resultsAppear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media(max-width:600px) {
+  #participantList {
+    grid-template-columns: 1fr;
+  }
+
+  #selectedParticipant > .result-row {
+    padding: 24px 14px !important;
+  }
+}
+
     @media(max-width:700px){.wrap{width:min(100% - 28px,560px)}header{height:72px}.brand{font-size:14px}main{padding:54px 0}.admin-grid{grid-template-columns:1fr}.panel{padding:18px}.gift-card{padding:28px 18px}.subtitle{letter-spacing:.05em}.footer-mark{margin-top:48px}}
   </style>
 </head>
