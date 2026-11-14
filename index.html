@@ -351,7 +351,8 @@
     <button class="secondary" id="backToAdmin">Panel administratora</button>
   </div>
 
-  <div id="qrList" class="results"></div>
+  <div id="transferMessage" class="panel-sub"></div>
+<div id="qrList" class="results"></div>
 
 </section>
     </main>
@@ -570,7 +571,7 @@ $("backToAdmin").onclick=()=>activate("adminPanel");
     }
     
 async function showLinks() {
-  message("adminMessage", "Pobieram listę uczestników…");
+  message("transferMessage", "Pobieram listę uczestników…");
   $("qrList").innerHTML = "";
 
   try {
@@ -661,19 +662,19 @@ async function showLinks() {
           qr.textContent = "Nie udało się załadować kodu QR.";
         }
 
-        $("copySelected").onclick = () =>
-          navigator.clipboard.writeText(url)
-            .then(() => message("adminMessage", `Skopiowano link: ${name}`))
-            .catch(() => message("adminMessage", "Nie udało się skopiować linku.", true));
+       $("copySelected").onclick = () =>
+  navigator.clipboard.writeText(url)
+    .then(() => message("transferMessage", `Skopiowano link: ${name}`))
+    .catch(() => message("transferMessage", "Nie udało się skopiować linku.", true));
       };
 
       list.appendChild(button);
     });
 
-    message("adminMessage", "Lista uczestników gotowa. Wybierz osobę.");
+    message("transferMessage", "Lista uczestników gotowa. Wybierz osobę.");
 
   } catch (e) {
-    message("adminMessage", e.message, true);
+    message("transferMessage", e.message, true);
   }
 }
 
