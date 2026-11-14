@@ -938,6 +938,7 @@ async function showLinks() {
     // Jeśli ktoś wszedł z prywatnego linku, od razu pokaż ekran wyniku.
     const initialToken=getTokenFromUrl();
 if(initialToken){$("tokenInput").value=initialToken;activate("publicPanel");$("publicPanel").classList.add("active");checkToken();}
+        loadHomeData();
 })();
 </script>
 </body>
