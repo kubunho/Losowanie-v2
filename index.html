@@ -270,13 +270,32 @@
       </div>
 
       <section class="panel" id="publicPanel">
-        <h2>Twój prezent</h2>
-        <p class="panel-sub">Wpisz kod z prywatnego linku, aby zobaczyć wynik losowania.</p>
-        <div class="field"><input id="tokenInput" placeholder="Wklej swój prywatny kod"><button class="primary" id="checkToken">Sprawdź</button></div>
-        <div id="publicMessage"></div>
-        <div id="publicResult" class="hidden"><p class="panel-sub">W tym roku kupujesz prezent dla:</p><div id="resultName"></div></div>
-        <div style="margin-top:18px"><button class="secondary" id="backHome">Wróć</button></div>
-      </section>
+  <h2>Twój prezent</h2>
+  <p class="panel-sub">Wpisz kod z prywatnego linku, aby zobaczyć wynik losowania.</p>
+
+  <div class="field">
+    <input id="tokenInput" placeholder="Wklej swój prywatny kod">
+    <button class="primary" id="checkToken">Sprawdź</button>
+  </div>
+
+  <div id="publicMessage"></div>
+
+  <div id="publicResult" class="hidden">
+    <p class="panel-sub">Witaj,</p>
+    <div id="giverName" style="font-family:'Barlow Condensed';font-size:32px;color:var(--gold);margin:4px 0 24px;"></div>
+
+    <p class="panel-sub">W tym roku kupujesz prezent dla:</p>
+    <div id="resultName"></div>
+
+    <p class="panel-sub" style="margin-top:24px;font-style:italic">
+      Psst... zachowaj to w tajemnicy!
+    </p>
+  </div>
+
+  <div style="margin-top:18px">
+    <button class="secondary" id="backHome">Wróć</button>
+  </div>
+</section>
 
       <section class="panel" id="adminPanel">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
