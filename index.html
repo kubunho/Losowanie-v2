@@ -370,18 +370,41 @@
     </header>
     <main>
       <div id="homeView">
-        <div class="eyebrow">Christmas edition</div>
-        <h1>ALE ATAK</h1>
-        <p class="subtitle">Świąteczne rozdawanie prezentów</p>
-        <div class="rule"></div>
-        <section class="gift-card">
-          <div class="gift-icon">♧</div>
-          <h2>Sprawdź swój prezent</h2>
-          <button class="primary" id="revealOpen">Odkryj prezent&nbsp; →</button>
-          <p class="hint">Masz swój prywatny link? Otwórz go, aby poznać wynik.</p>
-        </section>
-        <div class="footer-mark">✦ &nbsp; ALE ATAK &nbsp; ✦</div>
+  <div class="eyebrow">Christmas edition</div>
+  <h1>ALE ATAK</h1>
+  <p class="subtitle">Świąteczne rozdawanie prezentów</p>
+  <div class="rule"></div>
+
+  <div class="home-countdowns">
+    <div class="countdown-card">
+      <div class="countdown-title">Wielkie losowanie</div>
+      <div class="countdown-date">04.12.2026 · 21:00</div>
+      <div id="drawCountdown" class="countdown-clock">
+        <div class="countdown-finished">ŁADOWANIE...</div>
       </div>
+    </div>
+
+    <div class="countdown-card">
+      <div class="countdown-title">Spotkanie ALE ATAK</div>
+      <div class="countdown-date">09.01.2027 · 18:00</div>
+      <div id="meetupCountdown" class="countdown-clock">
+        <div class="countdown-finished">ŁADOWANIE...</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="gift-card">
+    <div class="gift-icon">♧</div>
+    <h2>Sprawdź swój prezent</h2>
+    <p class="hint">Wybierz swój nick, aby przejść do prywatnego losowania.</p>
+  </section>
+
+  <div id="participantGrid" class="participant-grid">
+    <button class="participant-card" disabled>Ładowanie...</button>
+  </div>
+
+  <div class="footer-mark">✦ &nbsp; ALE ATAK &nbsp; ✦</div>
+</div>
 
       <section class="panel" id="publicPanel">
 
