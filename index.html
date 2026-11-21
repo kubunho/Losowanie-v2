@@ -497,6 +497,12 @@ header{
 .is-dead .player-hp i{width:0!important}
 .is-silver{border-color:rgba(164,181,198,.72)}
 .is-silver .player-status{color:#c0cbd5}
+.is-domin{border-color:rgba(190,48,54,.9);background:linear-gradient(145deg,rgba(42,10,13,.98),rgba(10,10,12,.98))}
+.is-domin .player-hp{background:#4c1b1f}
+.is-domin .player-hp i{background:linear-gradient(90deg,#a3131d,#ff525c)}
+.is-domin .player-hp-value{color:#ff858b}
+.is-god .player-rank{color:#d8a5ff}
+.is-god{border-color:rgba(174,105,220,.8)}
 .footer-mark{margin:22px auto 0;text-align:center;color:#e6bd72;font-size:11px;letter-spacing:2px;text-shadow:0 2px 5px #000}
 .panel{
   background:linear-gradient(145deg,rgba(7,14,17,.97),rgba(10,18,21,.96));
@@ -602,6 +608,12 @@ body:before{
 .qr-player-card .qr-action{font-size:10px;color:#f4d7a0;white-space:nowrap;}
 .qr-player-card.qr-silver{border-color:rgba(164,181,198,.8);}
 .qr-player-card.qr-silver .qr-rank{color:#c0cbd5;}
+.qr-player-card.qr-domin{border-color:rgba(190,48,54,.9);background:linear-gradient(145deg,rgba(42,10,13,.98),rgba(10,10,12,.98));}
+.qr-player-card.qr-domin .qr-hp{background:#4c1b1f;}
+.qr-player-card.qr-domin .qr-hp i{background:linear-gradient(90deg,#a3131d,#ff525c);}
+.qr-player-card.qr-domin .qr-hp-value{color:#ff858b;}
+.qr-player-card.qr-god{border-color:rgba(174,105,220,.85);}
+.qr-player-card.qr-god .qr-rank{color:#d8a5ff;}
 .qr-player-card.qr-dead{border-color:rgba(190,48,54,.8);background:linear-gradient(145deg,rgba(42,10,13,.98),rgba(10,10,12,.98));}
 .qr-player-card.qr-dead .qr-avatar{filter:grayscale(1);color:#ff7777;}
 .qr-player-card.qr-dead .qr-rank{color:#ff6a70;}
@@ -623,7 +635,8 @@ body:before{
   color:#ffd16a;font-size:11px;font-weight:900;letter-spacing:.6px;
 }
 #selectedParticipant .selected-player-badge.silver{color:#c0cbd5;border-color:#9eabb866;}
-#selectedParticipant .selected-player-badge.dead{color:#ff7777;border-color:#c33a4488;}
+#selectedParticipant .selected-player-badge.domin{color:#ff858b;border-color:#c33a4488;}
+#selectedParticipant .selected-player-badge.god{color:#d8a5ff;border-color:#ae69dc88;}
 #selectedQR{margin:18px auto!important;padding:14px!important;background:#fff!important;border-radius:10px!important;}
 #selectedQR canvas,#selectedQR img{display:block;padding:0!important;border-radius:2px!important;}
 #selectedLink{max-width:540px;padding:12px!important;border:1px solid rgba(255,205,126,.3)!important;border-radius:6px!important;color:#fff!important;background:#0d161b!important;}
@@ -1138,22 +1151,24 @@ async function loadHomeData() {
     const nick = String(person.name || "").trim().toLowerCase();
     const isDomin = nick === "domin";
     const isSiwy = nick === "siwy";
-    const rank = isSiwy ? "SILVER" : "GOLD";
-    const hp = isDomin ? 0 : (isSiwy ? 35 : 100);
-    const badge = isDomin ? "☠" : (isSiwy ? "✦" : "★");
+    const isLisek = nick === "lisek";
+    const rank = isLisek ? "GOD" : (isDomin ? "GOLD I" : (isSiwy ? "SILVER I" : "GOLD VI"));
+    const hp = isLisek ? 2137 : (isDomin ? 10 : 100);
+    const hpWidth = Math.min(100, hp);
+    const badge = isLisek ? "♛" : (isSiwy ? "✦" : "★");
     return `
-      <button class="participant-card ${isDomin ? "is-dead" : ""} ${isSiwy ? "is-silver" : "is-gold"}"
+      <button class="participant-card ${isDomin ? "is-domin" : ""} ${isSiwy ? "is-silver" : (isLisek ? "is-god" : "is-gold")}"
         data-participant="${person.id}" disabled>
-        <span class="player-avatar" aria-hidden="true">${isDomin ? "☠" : "♟"}</span>
+        <span class="player-avatar" aria-hidden="true">♟</span>
         <span class="player-info">
           <span class="player-name">${escapeHtml(person.name)}</span>
           <span class="player-meta">
-            <span class="player-rank">${badge} ${isDomin ? "ELIMINATED" : rank}</span>
-            <span class="player-hp"><i style="width:${hp}%"></i></span>
+            <span class="player-rank">${badge} ${rank}</span>
+            <span class="player-hp"><i style="width:${hpWidth}%"></i></span>
             <span class="player-hp-value">${hp} HP</span>
           </span>
         </span>
-        <span class="player-status">${isDomin ? "DEAD" : "READY"}</span>
+        <span class="player-status">READY</span>
       </button>
     `;
   }).join("");
@@ -1480,23 +1495,25 @@ async function showLinks() {
       const nick = name.trim().toLowerCase();
       const isDomin = nick === "domin";
       const isSiwy = nick === "siwy";
-      const rank = isDomin ? "DEAD" : (isSiwy ? "SILVER" : "GOLD");
-      const hp = isDomin ? 0 : (isSiwy ? 35 : 100);
-      const badge = isDomin ? "☠" : (isSiwy ? "✦" : "★");
+      const isLisek = nick === "lisek";
+      const rank = isLisek ? "GOD" : (isDomin ? "GOLD I" : (isSiwy ? "SILVER I" : "GOLD VI"));
+      const hp = isLisek ? 2137 : (isDomin ? 10 : 100);
+      const hpWidth = Math.min(100, hp);
+      const badge = isLisek ? "♛" : (isSiwy ? "✦" : "★");
       const token = r.token || r.private_token || r.access_token;
       const url = `${location.origin}${location.pathname}?token=${encodeURIComponent(token)}`;
 
       const button = document.createElement("button");
       button.type = "button";
       button.setAttribute("aria-expanded", "false");
-      button.className = `result-row qr-player-card ${isDomin ? "qr-dead" : (isSiwy ? "qr-silver" : "qr-gold")}`;
+      button.className = `result-row qr-player-card ${isDomin ? "qr-domin" : (isSiwy ? "qr-silver" : (isLisek ? "qr-god" : "qr-gold"))}`;
       button.innerHTML = `
-        <span class="qr-avatar" aria-hidden="true">${isDomin ? "☠" : "♟"}</span>
+        <span class="qr-avatar" aria-hidden="true">♟</span>
         <span class="qr-player-info">
           <span class="qr-player-name">${escapeHtml(name)}</span>
           <span class="qr-meta">
             <span class="qr-rank">${badge} ${rank}</span>
-            <span class="qr-hp"><i style="width:${hp}%"></i></span>
+            <span class="qr-hp"><i style="width:${hpWidth}%"></i></span>
             <span class="qr-hp-value">${hp} HP</span>
           </span>
         </span>
@@ -1526,7 +1543,7 @@ async function showLinks() {
         const action = button.querySelector(".qr-action");
         if (action) action.textContent = "Ukryj QR ↑";
 
-        const badgeClass = isDomin ? "dead" : (isSiwy ? "silver" : "gold");
+        const badgeClass = isDomin ? "domin" : (isSiwy ? "silver" : (isLisek ? "god" : "gold"));
         selected.innerHTML = `
           <div class="result-row">
             <h3>${escapeHtml(name)}</h3>
