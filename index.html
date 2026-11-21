@@ -977,13 +977,11 @@ function updateCountdown(elementId, dateValue) {
 }
 
 function updateParticipantAvailability() {
-  const ready =
-    homeEventStatus === "drawn" &&
-    homeDrawAt &&
-    Date.now() >= new Date(homeDrawAt).getTime();
-
+  // Karta ma zawsze otwierać okno hasła. Dostępność samego wyniku
+  // weryfikuje istniejąca funkcja RPC po wysłaniu hasła.
   document.querySelectorAll(".participant-card").forEach(button => {
-    button.disabled = !ready || button.classList.contains("is-dead");
+    button.disabled = false;
+    button.setAttribute("aria-label", "Sprawdź prezent: " + (button.querySelector(".player-name")?.textContent || button.textContent.trim()));
   });
 }
 
@@ -1470,6 +1468,7 @@ async function showLinks() {
 
     const list = $("participantList");
     const selected = $("selectedParticipant");
+    let selectedButton = null;
 
     validRows.forEach((r, i) => {
       const name =
@@ -1489,6 +1488,7 @@ async function showLinks() {
 
       const button = document.createElement("button");
       button.type = "button";
+      button.setAttribute("aria-expanded", "false");
       button.className = `result-row qr-player-card ${isDomin ? "qr-dead" : (isSiwy ? "qr-silver" : "qr-gold")}`;
       button.innerHTML = `
         <span class="qr-avatar" aria-hidden="true">${isDomin ? "☠" : "♟"}</span>
@@ -1504,6 +1504,28 @@ async function showLinks() {
       `;
 
       button.onclick = () => {
+        // Ponowne kliknięcie tej samej osoby chowa jej prywatny QR i link.
+        if (selectedButton === button) {
+          selected.innerHTML = "";
+          button.setAttribute("aria-expanded", "false");
+          const action = button.querySelector(".qr-action");
+          if (action) action.textContent = "Pokaż QR →";
+          selectedButton = null;
+          message("transferMessage", "Kod QR i prywatny link zostały ukryte.");
+          return;
+        }
+
+        // Przy wyborze innej osoby poprzedni panel zostaje zastąpiony.
+        if (selectedButton) {
+          selectedButton.setAttribute("aria-expanded", "false");
+          const previousAction = selectedButton.querySelector(".qr-action");
+          if (previousAction) previousAction.textContent = "Pokaż QR →";
+        }
+        selectedButton = button;
+        button.setAttribute("aria-expanded", "true");
+        const action = button.querySelector(".qr-action");
+        if (action) action.textContent = "Ukryj QR ↑";
+
         const badgeClass = isDomin ? "dead" : (isSiwy ? "silver" : "gold");
         selected.innerHTML = `
           <div class="result-row">
