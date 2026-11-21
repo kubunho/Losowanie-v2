@@ -378,7 +378,21 @@
   filter: blur(0);
 }
     @media(max-width:700px){.wrap{width:min(100% - 28px,560px)}header{height:72px}.brand{font-size:14px}main{padding:54px 0}.admin-grid{grid-template-columns:1fr}.panel{padding:18px}.gift-card{padding:28px 18px}.subtitle{letter-spacing:.05em}.footer-mark{margin-top:48px}}
-  </style>
+  
+/* ===== PRYWATNE LOGOWANIE UCZESTNIKA ===== */
+#participantPasswordModal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.82);backdrop-filter:blur(8px)}
+#participantPasswordModal.open{display:flex}
+#participantPasswordModal .modal{width:min(430px,100%);padding:28px;background:linear-gradient(145deg,#142329,#080f13);border:1px solid rgba(255,205,126,.65);border-radius:12px;box-shadow:0 24px 90px #000e}
+#participantPasswordModal h2{margin:0 0 6px;color:#ffda8a;font-family:"Barlow Condensed",sans-serif;font-size:32px;text-transform:uppercase}
+#participantPasswordModal .participant-login-name{margin:0 0 18px;color:#fff;font-weight:800;font-size:18px}
+#participantPasswordModal label{display:block;margin:0 0 7px;color:#d4c7b4;font-size:12px}
+#participantPasswordModal input{width:100%;min-height:48px;padding:12px 14px;color:#fff;background:#071014;border:1px solid rgba(255,205,126,.42);border-radius:7px;outline:none}
+#participantPasswordModal input:focus{border-color:#ffda8a;box-shadow:0 0 0 3px rgba(255,218,138,.13)}
+#participantPasswordMessage{min-height:20px;margin-top:10px;color:#ff9292;font-size:12px}
+#participantPasswordModal .modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
+#participantPasswordSubmit:disabled{opacity:.55;cursor:wait}
+
+</style>
 
 <style id="ale-atak-visual-redesign">
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap');
@@ -795,6 +809,21 @@ body:before{
     </main>
   </div>
 
+
+  <div id="participantPasswordModal" aria-hidden="true">
+    <form class="modal" id="participantPasswordForm" autocomplete="on">
+      <h2>Sprawdź swój prezent</h2>
+      <p class="participant-login-name" id="participantPasswordName"></p>
+      <label for="participantPasswordInput">Twoje prywatne hasło</label>
+      <input id="participantPasswordInput" type="password" autocomplete="current-password" placeholder="Wpisz hasło" required>
+      <div id="participantPasswordMessage" role="alert" aria-live="polite"></div>
+      <div class="modal-actions">
+        <button class="secondary" type="button" id="participantPasswordCancel">Wróć</button>
+        <button class="primary" type="submit" id="participantPasswordSubmit">Odkryj prezent</button>
+      </div>
+    </form>
+  </div>
+
   <div class="modal-backdrop" id="loginModal">
     <div class="modal">
       <h2>Logowanie administratora</h2>
@@ -845,7 +874,14 @@ body:before{
     };
     $("passwordInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("loginBtn").click();});
     $("logoutBtn").onclick=async()=>{await supabase.auth.signOut();$("adminPanel").classList.remove("active");activate("homeView");};
-    $("backHome").onclick=()=>{activate("homeView");};
+    $("backHome").onclick=()=>{
+      show("tokenEntry", true);
+      show("publicResult", false);
+      show("backHome", true);
+      $("tokenInput").value = "";
+      message("publicMessage", "");
+      activate("homeView");
+    };
     $("checkToken").onclick=checkToken;
     $("tokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")checkToken();});
 
@@ -947,7 +983,7 @@ function updateParticipantAvailability() {
     Date.now() >= new Date(homeDrawAt).getTime();
 
   document.querySelectorAll(".participant-card").forEach(button => {
-    button.disabled = !ready;
+    button.disabled = !ready || button.classList.contains("is-dead");
   });
 }
 
@@ -971,46 +1007,96 @@ if (meetupDateDisplay) {
   updateCountdown("meetupCountdown", homeMeetupAt);
   updateParticipantAvailability();
 }
-$("participantGrid").addEventListener("click", async e => {
+$("participantGrid").addEventListener("click", e => {
   const button = e.target.closest(".participant-card");
-
   if (!button || button.disabled) return;
 
   const participantId = button.dataset.participant;
   const person = homeParticipants.find(p => p.id === participantId);
-
   if (!person) return;
 
-  const password = prompt("Podaj hasło dla: " + person.name);
-
-  if (password === null || password === "") return;
-
-  const { data, error } = await supabase.rpc("get_my_draw_by_password", {
-    p_event_id: EVENT_ID,
-    p_participant_id: participantId,
-    p_password: password
-  });
-
-  if (error) {
-    alert("Nie udało się sprawdzić hasła. Spróbuj ponownie.");
-    console.error(error);
-    return;
-  }
-
-  const result = Array.isArray(data) ? data[0] : data;
-
-  if (!result) {
-    alert("Nieprawidłowe hasło lub wynik nie jest dostępny.");
-    return;
-  }
-
-  $("giverName").textContent = result.giver_name;
-  $("resultName").textContent = result.recipient_name;
-
-  show("tokenEntry", false);
-  show("publicResult", true);
-  activate("publicPanel");
+  const modal = $("participantPasswordModal");
+  modal.dataset.participantId = participantId;
+  $("participantPasswordName").textContent = person.name;
+  $("participantPasswordInput").value = "";
+  $("participantPasswordMessage").textContent = "";
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  setTimeout(() => $("participantPasswordInput").focus(), 50);
 });
+
+function closeParticipantPasswordModal(){
+  const modal = $("participantPasswordModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+  modal.dataset.participantId = "";
+  $("participantPasswordInput").value = "";
+  $("participantPasswordMessage").textContent = "";
+}
+
+$("participantPasswordCancel").addEventListener("click", closeParticipantPasswordModal);
+$("participantPasswordModal").addEventListener("click", e => {
+  if (e.target.id === "participantPasswordModal") closeParticipantPasswordModal();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && $("participantPasswordModal").classList.contains("open")) {
+    closeParticipantPasswordModal();
+  }
+});
+
+$("participantPasswordForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const modal = $("participantPasswordModal");
+  const participantId = modal.dataset.participantId;
+  const password = $("participantPasswordInput").value;
+  const submit = $("participantPasswordSubmit");
+  const errorBox = $("participantPasswordMessage");
+
+  if (!participantId || !password) {
+    errorBox.textContent = "Wpisz swoje hasło.";
+    return;
+  }
+
+  submit.disabled = true;
+  submit.textContent = "Sprawdzam…";
+  errorBox.textContent = "";
+
+  try {
+    // Zachowujemy dotychczasowe RPC i dokładnie te same parametry Supabase.
+    const { data, error } = await supabase.rpc("get_my_draw_by_password", {
+      p_event_id: EVENT_ID,
+      p_participant_id: participantId,
+      p_password: password
+    });
+
+    if (error) {
+      console.error("get_my_draw_by_password:", error);
+      errorBox.textContent = "Nie udało się sprawdzić hasła. Spróbuj ponownie.";
+      return;
+    }
+
+    const result = Array.isArray(data) ? data[0] : data;
+    if (!result || !result.recipient_name) {
+      errorBox.textContent = "Nieprawidłowe hasło lub wynik nie jest dostępny.";
+      return;
+    }
+
+    $("giverName").textContent = result.giver_name || $("participantPasswordName").textContent;
+    $("resultName").textContent = result.recipient_name;
+    show("tokenEntry", false);
+    show("backHome", true);
+    show("publicResult", true);
+    closeParticipantPasswordModal();
+    activate("publicPanel");
+  } catch (err) {
+    console.error(err);
+    errorBox.textContent = "Wystąpił błąd połączenia. Spróbuj ponownie.";
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Odkryj prezent";
+  }
+});
+
 async function loadHomeData() {
   const [participantsResult, eventResult] = await Promise.all([
     supabase.rpc("get_public_participants", {
