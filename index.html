@@ -658,20 +658,24 @@ body:before{
 #selectedParticipant .selected-player-badge.god{color:#d8a5ff;border-color:#ae69dc88;}
 /* Duzy avatar w rozwiniętym panelu prywatnego QR */
 #selectedParticipant .selected-player-top{
-  display:grid;grid-template-columns:minmax(220px, 34%) minmax(0,1fr);
-  align-items:center;gap:22px;width:100%;margin:0 auto 12px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;width:100%;margin:0 auto 12px;text-align:center;
 }
 #selectedParticipant .selected-player-avatar{
-  display:block;width:100%;aspect-ratio:1.4/1;min-height:180px;overflow:hidden;
+  display:block;width:min(90%,288px);aspect-ratio:1.4/1;min-height:0;
+  margin:0 auto;overflow:hidden;
   border:3px solid rgba(255,205,126,.58);border-radius:8px;
   background:linear-gradient(145deg,#182329,#080f13);
   box-shadow:0 8px 24px #0008;
 }
 #selectedParticipant .selected-player-avatar img{
-  display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+  display:block;width:100%;height:100%;object-fit:contain;object-position:center;
 }
-#selectedParticipant .selected-player-identity{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
-#selectedParticipant .selected-player-identity h3{margin:0 0 6px;font-size:clamp(28px,4vw,42px);line-height:1.05;}
+#selectedParticipant .selected-player-identity{
+  min-width:0;width:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:8px;
+}
+#selectedParticipant .selected-player-identity h3{margin:0;font-size:clamp(28px,4vw,42px);line-height:1.05;}
 #selectedParticipant .selected-player-identity .selected-player-badge{margin:0;}
 #selectedQR{margin:18px auto!important;padding:14px!important;background:#fff!important;border-radius:10px!important;}
 #selectedQR canvas,#selectedQR img{display:block;padding:0!important;border-radius:2px!important;}
@@ -690,8 +694,8 @@ body:before{
   #participantList{grid-template-columns:1fr;gap:8px;}
   #participantList .result-row.qr-player-card{min-height:68px;}
   #selectedParticipant .result-row{padding:15px 10px;}
-  #selectedParticipant .selected-player-top{grid-template-columns:1fr;gap:12px;}
-  #selectedParticipant .selected-player-avatar{width:min(100%,320px);aspect-ratio:1.4/1;min-height:0;margin:0 auto;}
+  #selectedParticipant .selected-player-top{flex-direction:column;gap:10px;}
+  #selectedParticipant .selected-player-avatar{width:min(90%,288px);aspect-ratio:1.4/1;min-height:0;margin:0 auto;}
   #selectedQR{max-width:100%;overflow:hidden;}
 }
 
@@ -1592,11 +1596,11 @@ async function showLinks() {
         selected.innerHTML = `
           <div class="result-row">
             <div class="selected-player-top">
-              <div class="selected-player-avatar">${playerAvatarMarkup(name)}</div>
               <div class="selected-player-identity">
                 <h3>${escapeHtml(name)}</h3>
                 <div class="selected-player-badge ${badgeClass}">${badge} ${rank} · ${hp} HP</div>
               </div>
+              <div class="selected-player-avatar">${playerAvatarMarkup(name)}</div>
             </div>
             <p class="panel-sub">Prywatny kod QR</p>
             <div id="selectedQR" style="display:flex;justify-content:center;width:max-content;max-width:100%;margin:16px auto"></div>
